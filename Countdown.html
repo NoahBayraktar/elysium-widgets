@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prüfungsbalken</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --sand: #c8c0b0;
+  --kante: rgba(200,192,176,.22);
+  --schrift: #EDE7DE;
+  --grau: #7a8490;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Archivo', system-ui, sans-serif;
+  color: var(--schrift);
+  padding: 0;
+  background: transparent;
+}
+
+.kachel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 24px 30px 26px;
+  background:
+    radial-gradient(130% 100% at 12% -10%, #1c1d1d 0%, #141515 42%, #0d0e0e 100%);
+}
+.kachel::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none;
+  opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.kachel::after {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 0; height: 1px; z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(200,192,176,.30) 35%, transparent 85%);
+}
+.ecke { position: absolute; width: 13px; height: 13px; z-index: 2; pointer-events: none; }
+.ecke.ol { top: 12px; left: 12px;  border-top: 1px solid var(--kante); border-left: 1px solid var(--kante); }
+.ecke.or { top: 12px; right: 12px; border-top: 1px solid var(--kante); border-right: 1px solid var(--kante); }
+.ecke.ul { bottom: 12px; left: 12px;  border-bottom: 1px solid var(--kante); border-left: 1px solid var(--kante); }
+.ecke.ur { bottom: 12px; right: 12px; border-bottom: 1px solid var(--kante); border-right: 1px solid var(--kante); }
+
+.inhalt { position: relative; z-index: 3; }
+
+h6 {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--grau);
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
+.kopfzeile {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+#tage {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: clamp(40px, 8.4vw, 62px);
+  line-height: 1;
+  letter-spacing: -.035em;
+  color: var(--sand);
+  text-shadow: 0 0 40px rgba(200,192,176,.28);
+}
+#tage small {
+  font-size: .26em;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--grau);
+  margin-left: .55em;
+  font-weight: 400;
+  text-shadow: none;
+}
+#termin {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--grau);
+}
+
+.spur {
+  height: 7px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(200,192,176,.10), rgba(200,192,176,.16));
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.5);
+}
+.spur > i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(200,192,176,.45), var(--sand));
+  box-shadow: 0 0 16px rgba(200,192,176,.4);
+  transition: width .8s ease;
+}
+
+.fuss {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 13px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: var(--grau);
+}
+.fuss b { font-weight: 500; color: var(--sand); }
+.punkt { color: var(--sand); opacity: .5; }
+
+@media (prefers-reduced-motion: reduce) { .spur > i { transition: none; } }
+@media (max-width: 520px) { .kachel { padding: 20px 22px 22px; } }
+</style>
+</head>
+<body>
+
+<div class="kachel">
+  <span class="ecke ol"></span><span class="ecke or"></span>
+  <span class="ecke ul"></span><span class="ecke ur"></span>
+
+  <div class="inhalt">
+    <h6>Bis zur Abschlussprüfung</h6>
+
+    <div class="kopfzeile">
+      <div id="tage">&ndash;<small>Tage</small></div>
+      <div id="termin">27. Januar 2027</div>
+    </div>
+
+    <div class="spur"><i id="balken"></i></div>
+
+    <div class="fuss">
+      <span><b id="wochen">&ndash;</b> Wochen übrig</span>
+      <span class="punkt">&middot;</span>
+      <span><b id="verstrichen">&ndash;</b> von <b id="gesamt">&ndash;</b> Tagen</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Beide Daten hier anpassen, falls sich etwas ändert:
+  var START = new Date('2026-08-22T00:00:00');
+  var ZIEL  = new Date('2027-01-27T00:00:00');
+  var BESCHRIFTUNG = '27. Januar 2027';
+
+  var TAG = 86400000;
+
+  function tick() {
+    var j = new Date();
+    var heute = new Date(j.getFullYear(), j.getMonth(), j.getDate());
+
+    var gesamt = Math.round((ZIEL - START) / TAG);
+    var verstrichen = Math.max(0, Math.min(gesamt, Math.round((heute - START) / TAG)));
+    var uebrig = Math.max(0, gesamt - verstrichen);
+    var anteil = gesamt > 0 ? verstrichen / gesamt : 0;
+
+    document.getElementById('tage').innerHTML =
+      uebrig + '<small>' + (uebrig === 1 ? 'Tag' : 'Tage') + '</small>';
+    document.getElementById('termin').textContent =
+      uebrig === 0 ? 'Heute ist es soweit' : BESCHRIFTUNG;
+
+    document.getElementById('balken').style.width = (anteil * 100).toFixed(2) + '%';
+    document.getElementById('wochen').textContent = Math.floor(uebrig / 7);
+    document.getElementById('verstrichen').textContent = verstrichen;
+    document.getElementById('gesamt').textContent = gesamt;
+  }
+
+  tick();
+  setInterval(tick, 60000);
+})();
+</script>
+</body>
+</html>
