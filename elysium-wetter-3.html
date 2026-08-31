@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wetter</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --sand: #c8c0b0;
+  --regen: #7aa5c4;
+  --kante: rgba(200,192,176,.22);
+  --schrift: #EDE7DE;
+  --grau: #7f8489;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Archivo', system-ui, sans-serif; color: var(--schrift); padding: 0; background: transparent; }
+
+.kachel {
+  position: relative; overflow: hidden; isolation: isolate;
+  padding: 24px 30px 20px;
+  background: radial-gradient(130% 100% at 12% -10%, #1c1d1d 0%, #141515 42%, #0d0e0e 100%);
+}
+.kachel::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.kachel::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(200,192,176,.30) 35%, transparent 85%);
+}
+.ecke { position: absolute; width: 13px; height: 13px; z-index: 2; pointer-events: none; }
+.ecke.ol { top: 12px; left: 12px;  border-top: 1px solid var(--kante); border-left: 1px solid var(--kante); }
+.ecke.or { top: 12px; right: 12px; border-top: 1px solid var(--kante); border-right: 1px solid var(--kante); }
+.ecke.ul { bottom: 12px; left: 12px;  border-bottom: 1px solid var(--kante); border-left: 1px solid var(--kante); }
+.ecke.ur { bottom: 12px; right: 12px; border-bottom: 1px solid var(--kante); border-right: 1px solid var(--kante); }
+
+.inhalt { position: relative; z-index: 3; }
+
+h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-transform: uppercase; color: var(--grau); font-weight: 400; margin-bottom: 18px; }
+.gruppe { font-family: var(--mono); font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--grau); margin-bottom: 12px; }
+
+/* Aktuell */
+.jetzt { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.jetzt .gross { width: 54px; height: 54px; flex: none; }
+#grad { font-family: var(--mono); font-weight: 600; font-size: clamp(34px, 6vw, 52px); line-height: 1; letter-spacing: -.035em; color: var(--sand); text-shadow: 0 0 34px rgba(200,192,176,.25); }
+#lage { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--schrift); margin-top: 8px; }
+#gefuehlt { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: var(--grau); margin-top: 5px; }
+#regenlage { margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--regen); text-align: right; }
+
+.linie { height: 1px; background: rgba(200,192,176,.12); margin: 20px 0 16px; }
+
+
+/* Stunden und Tage */
+.raster { display: grid; gap: 14px 8px; }
+.raster.stunden { grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); }
+.raster.tage    { grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); }
+.zelle { text-align: center; }
+.zelle b { display: block; font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--grau); margin-bottom: 7px; }
+.zelle .klein { width: 21px; height: 21px; margin: 0 auto 7px; display: block; }
+.zelle span { font-family: var(--mono); font-size: 10px; display: block; }
+.zelle .hoch { color: var(--schrift); }
+.zelle .tief { color: var(--grau); margin-top: 2px; }
+.zelle .nass { color: var(--regen); margin-top: 3px; font-size: 9px; }
+
+.fuss {
+  margin-top: 20px; padding-top: 12px; border-top: 1px solid rgba(200,192,176,.10);
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--grau);
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.fuss a { color: var(--grau); text-decoration: none; }
+.fuss a:hover { color: var(--sand); }
+.fehler { font-family: var(--mono); font-size: 11px; color: var(--grau); }
+
+@media (max-width: 620px) {
+  .kachel { padding: 20px 22px 18px; }
+  .raster.stunden { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
+  .raster.tage { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); }
+  #regenlage { margin-left: 0; text-align: left; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="kachel">
+  <span class="ecke ol"></span><span class="ecke or"></span>
+  <span class="ecke ul"></span><span class="ecke ur"></span>
+
+  <div class="inhalt">
+    <h6>Wetter &middot; Münster</h6>
+    <div id="feld"><div class="fehler">Wird geladen &hellip;</div></div>
+    <div class="fuss">
+      <span id="stand">&nbsp;</span>
+      <span><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Standort hier ändern, falls nötig:
+  var BREITE = 51.96, LAENGE = 7.63;
+  // Wie oft neu geladen wird (Minuten):
+  var TAKT = 15;
+
+  var letzterAbruf = 0;
+
+  var abfrage = 'https://api.open-meteo.com/v1/forecast'
+    + '?latitude=' + BREITE + '&longitude=' + LAENGE
+    + '&current=temperature_2m,apparent_temperature,weather_code'
+    + '&hourly=temperature_2m,weather_code,precipitation_probability'
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+    + '&timezone=Europe%2FBerlin&forecast_days=15';
+
+  function lage(c) {
+    if (c === 0) return ['Klar', 'sonne'];
+    if (c === 1) return ['Überwiegend klar', 'sonne'];
+    if (c === 2) return ['Teilweise bewölkt', 'halb'];
+    if (c === 3) return ['Bedeckt', 'wolke'];
+    if (c === 45 || c === 48) return ['Nebel', 'nebel'];
+    if (c >= 51 && c <= 57) return ['Nieselregen', 'regen'];
+    if (c >= 61 && c <= 67) return ['Regen', 'regen'];
+    if (c >= 71 && c <= 77) return ['Schnee', 'schnee'];
+    if (c >= 80 && c <= 82) return ['Schauer', 'regen'];
+    if (c === 85 || c === 86) return ['Schneeschauer', 'schnee'];
+    if (c >= 95) return ['Gewitter', 'gewitter'];
+    return ['—', 'wolke'];
+  }
+
+  function zeichen(art, klasse) {
+    var s = '<svg class="' + klasse + '" viewBox="0 0 48 48" fill="none" '
+          + 'stroke="var(--sand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+    var sonne = '<circle cx="24" cy="24" r="8"/><path d="M24 6v4M24 38v4M6 24h4M38 24h4M11 11l3 3M34 34l3 3M37 11l-3 3M14 34l-3 3"/>';
+    var wolke = '<path d="M15 34h18a7 7 0 0 0 .6-14 10 10 0 0 0-19.2 2A6 6 0 0 0 15 34z"/>';
+    if (art === 'sonne') s += sonne;
+    else if (art === 'halb') s += '<circle cx="18" cy="17" r="6"/><path d="M18 5v3M6 17h3M9.5 8.5l2 2"/><path d="M19 38h16a6 6 0 0 0 .5-12 9 9 0 0 0-17-1.5A5.5 5.5 0 0 0 19 38z"/>';
+    else if (art === 'wolke') s += wolke;
+    else if (art === 'nebel') s += wolke + '<path d="M10 40h28M14 44h20" opacity=".6"/>';
+    else if (art === 'regen') s += wolke + '<path d="M18 39l-2 5M26 39l-2 5M34 39l-2 5"/>';
+    else if (art === 'schnee') s += wolke + '<path d="M18 41v3M17 42.5h2M26 41v3M25 42.5h2M34 41v3M33 42.5h2"/>';
+    else if (art === 'gewitter') s += wolke + '<path d="M26 38l-5 6h5l-4 6"/>';
+    return s + '</svg>';
+  }
+
+  function grad(n) { return Math.round(n) + '°'; }
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  // Index des ersten Eintrags, der nicht in der Vergangenheit liegt
+  function abJetzt(zeiten) {
+    var jetzt = Date.now();
+    for (var i = 0; i < zeiten.length; i++) {
+      if (new Date(zeiten[i]).getTime() >= jetzt - 1800000) return i;
+    }
+    return 0;
+  }
+
+  function stunden(d) {
+    var start = abJetzt(d.hourly.time);
+    var h = '<div class="gruppe">24 Stunden</div><div class="raster stunden">';
+    for (var i = start; i < start + 24 && i < d.hourly.time.length; i++) {
+      var t = new Date(d.hourly.time[i]);
+      var p = d.hourly.precipitation_probability[i];
+      h += '<div class="zelle">'
+        +   '<b>' + pad(t.getHours()) + ' Uhr</b>'
+        +   zeichen(lage(d.hourly.weather_code[i])[1], 'klein')
+        +   '<span class="hoch">' + grad(d.hourly.temperature_2m[i]) + '</span>'
+        +   (p > 0 ? '<span class="nass">' + p + '%</span>' : '')
+        + '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function tage(d) {
+    var h = '<div class="gruppe">14 Tage</div><div class="raster tage">';
+    for (var i = 1; i < d.daily.time.length; i++) {
+      var t = new Date(d.daily.time[i] + 'T12:00:00');
+      var name = t.toLocaleDateString('de-DE', { weekday: 'short' }).replace('.', '');
+      h += '<div class="zelle">'
+        +   '<b>' + name + ' ' + t.getDate() + '.</b>'
+        +   zeichen(lage(d.daily.weather_code[i])[1], 'klein')
+        +   '<span class="hoch">' + grad(d.daily.temperature_2m_max[i]) + '</span>'
+        +   '<span class="tief">' + grad(d.daily.temperature_2m_min[i]) + '</span>'
+        + '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function naechsterRegen(d) {
+    var start = abJetzt(d.hourly.time);
+    for (var i = start; i < start + 24 && i < d.hourly.time.length; i++) {
+      if (d.hourly.precipitation_probability[i] >= 50) {
+        var t = new Date(d.hourly.time[i]);
+        return 'Regen wahrscheinlich ab ' + pad(t.getHours()) + ':00';
+      }
+    }
+    return 'Kein Regen in 24 Stunden';
+  }
+
+  function laden() {
+    fetch(abfrage)
+      .then(function (r) { if (!r.ok) throw new Error('Antwort ' + r.status); return r.json(); })
+      .then(function (d) {
+        var jetzt = lage(d.current.weather_code);
+
+        var h = '<div class="jetzt">'
+          +   zeichen(jetzt[1], 'gross')
+          +   '<div>'
+          +     '<div id="grad">' + grad(d.current.temperature_2m) + '</div>'
+          +     '<div id="lage">' + jetzt[0] + '</div>'
+          +     '<div id="gefuehlt">gefühlt ' + grad(d.current.apparent_temperature) + '</div>'
+          +   '</div>'
+          +   '<div id="regenlage">' + naechsterRegen(d) + '</div>'
+          + '</div>';
+
+        h += '<div class="linie"></div>' + stunden(d);
+        h += '<div class="linie"></div>' + tage(d);
+
+        document.getElementById('feld').innerHTML = h;
+
+        var akt = new Date();
+        letzterAbruf = akt.getTime();
+        document.getElementById('stand').textContent =
+          'Stand ' + pad(akt.getHours()) + ':' + pad(akt.getMinutes());
+      })
+      .catch(function () {
+        document.getElementById('feld').innerHTML =
+          '<div class="fehler">Wetterdaten nicht abrufbar</div>';
+      });
+  }
+
+  laden();
+  setInterval(laden, TAKT * 60000);
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && Date.now() - letzterAbruf > 120000) laden();
+  });
+})();
+</script>
+</body>
+</html>
