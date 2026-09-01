@@ -39,45 +39,64 @@ body { font-family: 'Archivo', system-ui, sans-serif; color: var(--schrift); pad
 
 .inhalt { position: relative; z-index: 3; }
 
-h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-transform: uppercase; color: var(--grau); font-weight: 400; margin-bottom: 18px; }
-.gruppe { font-family: var(--mono); font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--grau); margin-bottom: 12px; }
+h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: var(--grau); font-weight: 400; margin-bottom: 20px; }
 
 /* Aktuell */
-.jetzt { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-.jetzt .gross { width: 54px; height: 54px; flex: none; }
-#grad { font-family: var(--mono); font-weight: 600; font-size: clamp(34px, 6vw, 52px); line-height: 1; letter-spacing: -.035em; color: var(--sand); text-shadow: 0 0 34px rgba(200,192,176,.25); }
-#lage { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--schrift); margin-top: 8px; }
-#gefuehlt { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: var(--grau); margin-top: 5px; }
-#regenlage { margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--regen); text-align: right; }
+.jetzt { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.jetzt .gross { width: 70px; height: 70px; flex: none; }
+#grad { font-family: var(--mono); font-weight: 600; font-size: clamp(38px, 6.4vw, 58px); line-height: 1; letter-spacing: -.035em; color: var(--sand); text-shadow: 0 0 34px rgba(200,192,176,.25); }
+#lage { font-family: var(--mono); font-size: 16px; letter-spacing: .05em; color: var(--schrift); margin-top: 10px; }
+#gefuehlt { font-family: var(--mono); font-size: 14px; letter-spacing: .04em; color: var(--grau); margin-top: 6px; }
+#regenlage { margin-left: auto; font-family: var(--mono); font-size: 15px; letter-spacing: .04em; color: var(--regen); text-align: right; }
 
-.linie { height: 1px; background: rgba(200,192,176,.12); margin: 20px 0 16px; }
+.linie { height: 1px; background: rgba(200,192,176,.12); margin: 22px 0 18px; }
 
+/* Umschalter */
+.reiter { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+.reiter button {
+  border: 1px solid var(--kante);
+  background: rgba(200,192,176,.03);
+  color: var(--grau);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.reiter button:hover { color: var(--schrift); border-color: rgba(200,192,176,.4); }
+.reiter button.an { background: var(--sand); color: #111212; border-color: var(--sand); }
+.reiter button:focus-visible { outline: 2px solid var(--sand); outline-offset: 2px; }
 
-/* Stunden und Tage */
-.raster { display: grid; gap: 14px 8px; }
-.raster.stunden { grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); }
-.raster.tage    { grid-template-columns: repeat(auto-fit, minmax(58px, 1fr)); }
+/* Raster */
+.raster { display: grid; gap: 18px 10px; }
+.raster.stunden { grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); }
+.raster.tage    { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
 .zelle { text-align: center; }
-.zelle b { display: block; font-family: var(--mono); font-size: 9px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--grau); margin-bottom: 7px; }
-.zelle .klein { width: 21px; height: 21px; margin: 0 auto 7px; display: block; }
-.zelle span { font-family: var(--mono); font-size: 10px; display: block; }
+.zelle b { display: block; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--grau); margin-bottom: 10px; }
+.zelle .klein { width: 36px; height: 36px; margin: 0 auto 10px; display: block; }
+.zelle span { font-family: var(--mono); font-size: 15px; display: block; }
 .zelle .hoch { color: var(--schrift); }
-.zelle .tief { color: var(--grau); margin-top: 2px; }
-.zelle .nass { color: var(--regen); margin-top: 3px; font-size: 9px; }
+.zelle .tief { color: var(--grau); margin-top: 3px; font-size: 13px; }
+.zelle .nass { color: var(--regen); margin-top: 5px; font-size: 12px; }
+
+.versteckt { display: none; }
 
 .fuss {
-  margin-top: 20px; padding-top: 12px; border-top: 1px solid rgba(200,192,176,.10);
-  font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--grau);
+  margin-top: 22px; padding-top: 12px; border-top: 1px solid rgba(200,192,176,.10);
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--grau);
   display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
 }
 .fuss a { color: var(--grau); text-decoration: none; }
 .fuss a:hover { color: var(--sand); }
-.fehler { font-family: var(--mono); font-size: 11px; color: var(--grau); }
+.fehler { font-family: var(--mono); font-size: 13px; color: var(--grau); }
 
 @media (max-width: 620px) {
   .kachel { padding: 20px 22px 18px; }
-  .raster.stunden { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
-  .raster.tage { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); }
+  .raster.stunden { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
+  .raster.tage { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); }
   #regenlage { margin-left: 0; text-align: left; width: 100%; }
 }
 </style>
@@ -106,6 +125,7 @@ h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-trans
   var TAKT = 15;
 
   var letzterAbruf = 0;
+  var ansicht = 'heute';   // merkt sich die Auswahl über Aktualisierungen hinweg
 
   var abfrage = 'https://api.open-meteo.com/v1/forecast'
     + '?latitude=' + BREITE + '&longitude=' + LAENGE
@@ -147,7 +167,6 @@ h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-trans
   function grad(n) { return Math.round(n) + '°'; }
   function pad(n) { return String(n).padStart(2, '0'); }
 
-  // Index des ersten Eintrags, der nicht in der Vergangenheit liegt
   function abJetzt(zeiten) {
     var jetzt = Date.now();
     for (var i = 0; i < zeiten.length; i++) {
@@ -158,7 +177,7 @@ h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-trans
 
   function stunden(d) {
     var start = abJetzt(d.hourly.time);
-    var h = '<div class="gruppe">24 Stunden</div><div class="raster stunden">';
+    var h = '<div class="raster stunden' + (ansicht === 'heute' ? '' : ' versteckt') + '" id="rHeute">';
     for (var i = start; i < start + 24 && i < d.hourly.time.length; i++) {
       var t = new Date(d.hourly.time[i]);
       var p = d.hourly.precipitation_probability[i];
@@ -173,7 +192,7 @@ h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-trans
   }
 
   function tage(d) {
-    var h = '<div class="gruppe">14 Tage</div><div class="raster tage">';
+    var h = '<div class="raster tage' + (ansicht === 'tage' ? '' : ' versteckt') + '" id="rTage">';
     for (var i = 1; i < d.daily.time.length; i++) {
       var t = new Date(d.daily.time[i] + 'T12:00:00');
       var name = t.toLocaleDateString('de-DE', { weekday: 'short' }).replace('.', '');
@@ -198,6 +217,14 @@ h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-trans
     return 'Kein Regen in 24 Stunden';
   }
 
+  function umschalten(ziel) {
+    ansicht = ziel;
+    document.getElementById('rHeute').classList.toggle('versteckt', ziel !== 'heute');
+    document.getElementById('rTage').classList.toggle('versteckt', ziel !== 'tage');
+    document.getElementById('bHeute').classList.toggle('an', ziel === 'heute');
+    document.getElementById('bTage').classList.toggle('an', ziel === 'tage');
+  }
+
   function laden() {
     fetch(abfrage)
       .then(function (r) { if (!r.ok) throw new Error('Antwort ' + r.status); return r.json(); })
@@ -212,12 +239,17 @@ h6 { font-family: var(--mono); font-size: 9px; letter-spacing: .26em; text-trans
           +     '<div id="gefuehlt">gefühlt ' + grad(d.current.apparent_temperature) + '</div>'
           +   '</div>'
           +   '<div id="regenlage">' + naechsterRegen(d) + '</div>'
-          + '</div>';
-
-        h += '<div class="linie"></div>' + stunden(d);
-        h += '<div class="linie"></div>' + tage(d);
+          + '</div>'
+          + '<div class="linie"></div>'
+          + '<div class="reiter">'
+          +   '<button id="bHeute" class="' + (ansicht === 'heute' ? 'an' : '') + '">24 Stunden</button>'
+          +   '<button id="bTage" class="' + (ansicht === 'tage' ? 'an' : '') + '">14 Tage</button>'
+          + '</div>'
+          + stunden(d) + tage(d);
 
         document.getElementById('feld').innerHTML = h;
+        document.getElementById('bHeute').addEventListener('click', function () { umschalten('heute'); });
+        document.getElementById('bTage').addEventListener('click', function () { umschalten('tage'); });
 
         var akt = new Date();
         letzterAbruf = akt.getTime();
