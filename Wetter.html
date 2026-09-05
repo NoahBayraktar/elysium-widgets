@@ -39,7 +39,26 @@ body { font-family: 'Archivo', system-ui, sans-serif; color: var(--schrift); pad
 
 .inhalt { position: relative; z-index: 3; }
 
-h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: var(--grau); font-weight: 400; margin-bottom: 20px; }
+h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: var(--grau); font-weight: 400; margin-bottom: 18px; }
+
+/* Städte-Reiter */
+.staedte { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.staedte button {
+  border: 1px solid var(--kante);
+  background: rgba(200,192,176,.03);
+  color: var(--grau);
+  cursor: pointer;
+  padding: 9px 20px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.staedte button:hover { color: var(--schrift); border-color: rgba(200,192,176,.4); }
+.staedte button.an { background: var(--regen); color: #0d0e0e; border-color: var(--regen); }
+.staedte button:focus-visible { outline: 2px solid var(--sand); outline-offset: 2px; }
 
 /* Aktuell */
 .jetzt { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
@@ -54,7 +73,7 @@ h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-tran
 
 .linie { height: 1px; background: rgba(200,192,176,.12); margin: 22px 0 18px; }
 
-/* Umschalter */
+/* Zeitraum-Reiter */
 .reiter { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
 .reiter button {
   border: 1px solid var(--kante);
@@ -111,7 +130,13 @@ h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-tran
   <span class="ecke ul"></span><span class="ecke ur"></span>
 
   <div class="inhalt">
-    <h6>Wetter &middot; Münster</h6>
+    <h6>Wetter</h6>
+
+    <div class="staedte">
+      <button id="bMuenster">Münster</button>
+      <button id="bSolingen">Solingen</button>
+    </div>
+
     <div id="feld"><div class="fehler">Wird geladen &hellip;</div></div>
     <div class="fuss">
       <span id="stand">&nbsp;</span>
@@ -122,20 +147,29 @@ h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-tran
 
 <script>
 (function () {
-  // Standort hier ändern, falls nötig:
-  var BREITE = 51.96, LAENGE = 7.63;
+  // Standorte — Beschriftung bleibt beim Stadtnamen, die Koordinaten
+  // stecken auf den genaueren Ortsteil:
+  var ORTE = {
+    muenster: { name: 'Münster',  breite: 51.93,  laenge: 7.67 },
+    solingen: { name: 'Solingen', breite: 51.20,  laenge: 7.08 }
+  };
+
   // Wie oft neu geladen wird (Minuten):
   var TAKT = 15;
 
+  var stadt = 'muenster';
+  var ansicht = 'heute';
+  var daten = {};       // zwischengespeicherte Antworten pro Stadt
   var letzterAbruf = 0;
-  var ansicht = 'heute';   // merkt sich die Auswahl über Aktualisierungen hinweg
 
-  var abfrage = 'https://api.open-meteo.com/v1/forecast'
-    + '?latitude=' + BREITE + '&longitude=' + LAENGE
-    + '&current=temperature_2m,apparent_temperature,weather_code'
-    + '&hourly=temperature_2m,weather_code,precipitation_probability'
-    + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
-    + '&timezone=Europe%2FBerlin&forecast_days=15';
+  function abfrage(ort) {
+    return 'https://api.open-meteo.com/v1/forecast'
+      + '?latitude=' + ort.breite + '&longitude=' + ort.laenge
+      + '&current=temperature_2m,apparent_temperature,weather_code'
+      + '&hourly=temperature_2m,weather_code,precipitation_probability'
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+      + '&timezone=Europe%2FBerlin&forecast_days=15';
+  }
 
   function lage(c) {
     if (c === 0) return ['Klar', 'sonne'];
@@ -220,46 +254,53 @@ h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-tran
     return 'Kein Regen in 24 Stunden';
   }
 
-  function umschalten(ziel) {
-    ansicht = ziel;
-    document.getElementById('rHeute').classList.toggle('versteckt', ziel !== 'heute');
-    document.getElementById('rTage').classList.toggle('versteckt', ziel !== 'tage');
-    document.getElementById('bHeute').classList.toggle('an', ziel === 'heute');
-    document.getElementById('bTage').classList.toggle('an', ziel === 'tage');
+  function zeichnen() {
+    var d = daten[stadt];
+    if (!d) return;
+
+    var jetztLage = lage(d.current.weather_code);
+
+    var h = '<div class="jetzt">'
+      +   zeichen(jetztLage[1], 'gross')
+      +   '<div>'
+      +     '<div id="grad">' + grad(d.current.temperature_2m) + '</div>'
+      +     '<div id="lage">' + jetztLage[0] + '</div>'
+      +     '<div id="gefuehlt">gefühlt ' + grad(d.current.apparent_temperature) + '</div>'
+      +     '<div id="spanne">heute <b>' + grad(d.daily.temperature_2m_max[0]) + '</b>'
+      +       ' / <i>' + grad(d.daily.temperature_2m_min[0]) + '</i></div>'
+      +   '</div>'
+      +   '<div id="regenlage">' + naechsterRegen(d) + '</div>'
+      + '</div>'
+      + '<div class="linie"></div>'
+      + '<div class="reiter">'
+      +   '<button id="bHeute" class="' + (ansicht === 'heute' ? 'an' : '') + '">24 Stunden</button>'
+      +   '<button id="bTage" class="' + (ansicht === 'tage' ? 'an' : '') + '">14 Tage</button>'
+      + '</div>'
+      + stunden(d) + tage(d);
+
+    document.getElementById('feld').innerHTML = h;
+    document.getElementById('bHeute').addEventListener('click', function () { ansicht = 'heute'; zeichnen(); });
+    document.getElementById('bTage').addEventListener('click', function () { ansicht = 'tage'; zeichnen(); });
+
+    document.getElementById('bMuenster').classList.toggle('an', stadt === 'muenster');
+    document.getElementById('bSolingen').classList.toggle('an', stadt === 'solingen');
+
+    var akt = new Date();
+    document.getElementById('stand').textContent =
+      ORTE[stadt].name + ' · Stand ' + pad(akt.getHours()) + ':' + pad(akt.getMinutes());
   }
 
-  function laden() {
-    fetch(abfrage)
+  function laden(schluessel) {
+    return fetch(abfrage(ORTE[schluessel]))
       .then(function (r) { if (!r.ok) throw new Error('Antwort ' + r.status); return r.json(); })
-      .then(function (d) {
-        var jetzt = lage(d.current.weather_code);
+      .then(function (json) { daten[schluessel] = json; });
+  }
 
-        var h = '<div class="jetzt">'
-          +   zeichen(jetzt[1], 'gross')
-          +   '<div>'
-          +     '<div id="grad">' + grad(d.current.temperature_2m) + '</div>'
-          +     '<div id="lage">' + jetzt[0] + '</div>'
-          +     '<div id="gefuehlt">gefühlt ' + grad(d.current.apparent_temperature) + '</div>'
-          +     '<div id="spanne">heute <b>' + grad(d.daily.temperature_2m_max[0]) + '</b>'
-          +       ' / <i>' + grad(d.daily.temperature_2m_min[0]) + '</i></div>'
-          +   '</div>'
-          +   '<div id="regenlage">' + naechsterRegen(d) + '</div>'
-          + '</div>'
-          + '<div class="linie"></div>'
-          + '<div class="reiter">'
-          +   '<button id="bHeute" class="' + (ansicht === 'heute' ? 'an' : '') + '">24 Stunden</button>'
-          +   '<button id="bTage" class="' + (ansicht === 'tage' ? 'an' : '') + '">14 Tage</button>'
-          + '</div>'
-          + stunden(d) + tage(d);
-
-        document.getElementById('feld').innerHTML = h;
-        document.getElementById('bHeute').addEventListener('click', function () { umschalten('heute'); });
-        document.getElementById('bTage').addEventListener('click', function () { umschalten('tage'); });
-
-        var akt = new Date();
-        letzterAbruf = akt.getTime();
-        document.getElementById('stand').textContent =
-          'Stand ' + pad(akt.getHours()) + ':' + pad(akt.getMinutes());
+  function ladeAlles() {
+    Promise.all([laden('muenster'), laden('solingen')])
+      .then(function () {
+        letzterAbruf = Date.now();
+        zeichnen();
       })
       .catch(function () {
         document.getElementById('feld').innerHTML =
@@ -267,11 +308,14 @@ h6 { font-family: var(--mono); font-size: 12px; letter-spacing: .26em; text-tran
       });
   }
 
-  laden();
-  setInterval(laden, TAKT * 60000);
+  document.getElementById('bMuenster').addEventListener('click', function () { stadt = 'muenster'; zeichnen(); });
+  document.getElementById('bSolingen').addEventListener('click', function () { stadt = 'solingen'; zeichnen(); });
+
+  ladeAlles();
+  setInterval(ladeAlles, TAKT * 60000);
 
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && Date.now() - letzterAbruf > 120000) laden();
+    if (!document.hidden && Date.now() - letzterAbruf > 120000) ladeAlles();
   });
 })();
 </script>
